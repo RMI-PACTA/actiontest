@@ -62,7 +62,7 @@ jobs:
       - name: Install aspell on macOS
         if: ${{ runner.os=='macOS' }}
         run: |
-          brew install aspell aspell-en
+          brew install aspell --with-lang-en
 
       - uses: r-lib/actions/check-r-package@v2
         with:
