@@ -50,17 +50,17 @@ jobs:
           needs: check
 
       - name: Install aspell on Windows
-        if: startsWith(matrix.os,'windows')
+        if: ${{ runner.os=='Windows' }}
         run: |
           pacman -S --noconfirm aspell aspell-en
 
       - name: Install aspell on Ubuntu
-        if: startsWith(matrix.os,'ubuntu')
+        if: ${{ runner.os=='Linux' }}
         run: |
           sudo apt-get update && sudo apt-get install -y aspell aspell-en
 
       - name: Install aspell on macOS
-        if: startsWith(matrix.os,'macos')
+        if: ${{ runner.os=='macOS' }}
         run: |
           brew install aspell aspell-en
 
