@@ -36,6 +36,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install aspell
+        run: |
+          # sudo apt-get update && sudo apt-get install -y aspell aspell-en
+          pacman -S --noconfirm aspell
+
       - uses: r-lib/actions/setup-pandoc@v2
 
       - uses: r-lib/actions/setup-r@v2
@@ -48,11 +53,6 @@ jobs:
         with:
           extra-packages: any::rcmdcheck
           needs: check
-
-      - name: Install aspell
-        run: |
-          # sudo apt-get update && sudo apt-get install -y aspell aspell-en
-          pacman -S aspell
 
       - uses: r-lib/actions/check-r-package@v2
         with:
