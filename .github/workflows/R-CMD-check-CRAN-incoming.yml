@@ -49,6 +49,10 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Install aspell
+            run: |
+              sudo apt-get update && sudo apt-get install -y aspell aspell-en
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
@@ -58,5 +62,3 @@ jobs:
           _R_CHECK_CRAN_INCOMING_: true
           _R_CHECK_CRAN_INCOMING_REMOTE_: true
           _R_CHECK_CRAN_INCOMING_USE_ASPELL_: true
-          _R_CHECK_URLS_SHOW_301_STATUS_: true
-          _R_CHECK_RD_LINE_WIDTHS_: true
