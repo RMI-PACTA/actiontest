@@ -5,12 +5,11 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
-  schedule:
-    - cron: '0 5 * * 1'
 
 name: R-CMD-check-CRAN-incoming.yaml
 
-permissions: read-all
+permissions:
+  pull-requests: write
 
 jobs:
   R-CMD-check:
@@ -22,9 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'devel'}
           - {os: windows-latest, r: 'devel'}
-          - {os: ubuntu-latest,  r: 'devel', http-user-agent: 'release'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -43,7 +40,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck, any::crayon
           needs: check
 
       - name: Install aspell on Windows
@@ -61,12 +58,46 @@ jobs:
         run: |
           brew install aspell
 
-      - uses: r-lib/actions/check-r-package@v2
+      - name: R CMD check CRAN incoming feasibilty
+        id: rcmdcheck
+        run: |
+          cat("::group::Run R CMD check with CRAN incoming env vars\n")
+          options(crayon.enabled = TRUE)
+          cat("LOGNAME=", Sys.info()[["user"]], "\n", sep = "", file = Sys.getenv("GITHUB_ENV"), append = TRUE)
+          Sys.setenv("_R_CHECK_FORCE_SUGGESTS_" = "false")
+          Sys.setenv("_R_CHECK_CRAN_INCOMING_" = "true")
+          Sys.setenv("_R_CHECK_CRAN_INCOMING_REMOTE_" = "true")
+          Sys.setenv("_R_CHECK_CRAN_INCOMING_USE_ASPELL_" = "true")
+          cat("check-dir-path=", file.path(getwd(), "check"), "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
+          check_results <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), build_args = c("--no-manual", "--compact-vignettes=gs+qpdf"), error_on = "warning", check_dir = "check")
+          writeLines(paste0("```\n", check_results$stdout, "\n```"), Sys.getenv("GITHUB_STEP_SUMMARY"))
+          notes <- unlist(strsplit(check_results$notes, "\\n"))
+          notes <- grep("^checking CRAN incoming feasibility|^Maintainer: |^New submission$|^$", notes, value = TRUE, invert = TRUE)
+          writeLines(paste0("R CMD check CRAN incoming feasibility check notes found:\n```\n", notes, "\n```"), "notes.md")
+          if (length(notes) > 0L) cat("::error::Notes found in CRAN incoming feasibility check\n"); cat(paste(notes, collapse = "\n")); quit(status=1)
+        shell: Rscript {0}
+
+      - name: Upload 00check.log
+        if: failure()
+        uses: actions/upload-artifact@v4
         with:
-          upload-snapshots: true
-          build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
-          error-on: '"note"'
-        env:
-          _R_CHECK_CRAN_INCOMING_: true
-          _R_CHECK_CRAN_INCOMING_REMOTE_: true
-          _R_CHECK_CRAN_INCOMING_USE_ASPELL_: true
+          name: ${{ format('{0}-{1}-r{2}-{3}-00check.log', runner.os, runner.arch, matrix.config.r, matrix.config.id || strategy.job-index ) }}
+          path: ${{ steps.rcmdcheck.outputs.check-dir-path }}/*.Rcheck/00check.log
+          if-no-files-found: ignore
+
+      - name: Find Comment
+        if: failure()
+        uses: peter-evans/find-comment@v3
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+
+      - name: Create or update comment
+        if: failure()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: "notes.md"
+          edit-mode: replace
