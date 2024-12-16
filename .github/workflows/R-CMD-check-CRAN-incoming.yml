@@ -64,7 +64,7 @@ jobs:
       - name: R CMD check (CRAN incoming)
         id: rcmdcheck
         run: |
-          cat("::group::Run R CMD check with CRAN incoming env vars")
+          cat("::group::Run R CMD check with CRAN incoming env vars\n")
           options(crayon.enabled = TRUE)
           cat("LOGNAME=", Sys.info()[["user"]], "\n", sep = "", file = Sys.getenv("GITHUB_ENV"), append = TRUE)
           Sys.setenv("_R_CHECK_FORCE_SUGGESTS_" = "false")
@@ -72,12 +72,14 @@ jobs:
           Sys.setenv("_R_CHECK_CRAN_INCOMING_REMOTE_" = "true")
           Sys.setenv("_R_CHECK_CRAN_INCOMING_USE_ASPELL_" = "true")
           cat("check-dir-path=", file.path(getwd(), "check"), "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
-          check_results <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), build_args = c("--no-manual", "--compact-vignettes=gs+qpdf"), error_on = "note", check_dir = "check")
+          check_results <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), build_args = c("--no-manual", "--compact-vignettes=gs+qpdf"), error_on = "warning", check_dir = "check")
+          notes <- unlist(strsplit(check_results$notes, "\\n"))
+          notes <- grep("^checking CRAN incoming feasibility|^Maintainer: |^New submission$|^$", notes, value = TRUE, invert = TRUE)
+          if (length(notes) < 1L) stop("no notes found")
         shell: Rscript {0}
         working-directory: ${{ inputs.working-directory }}
 
       - name: Upload snapshots
-        if: ${{ (failure() && inputs.upload-snapshots == 'always') || inputs.upload-snapshots != 'false' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.snapshot-artifact-name || format('{0}-{1}-r{2}-{3}-testthat-snapshots', runner.os, runner.arch, matrix.config.r, matrix.config.id || strategy.job-index ) }}
