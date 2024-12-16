@@ -9,7 +9,6 @@ on:
 name: R-CMD-check-CRAN-incoming.yaml
 
 permissions:
-  contents: read
   pull-requests: write
 
 jobs:
@@ -72,10 +71,9 @@ jobs:
           cat("check-dir-path=", file.path(getwd(), "check"), "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
           check_results <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), build_args = c("--no-manual", "--compact-vignettes=gs+qpdf"), error_on = "warning", check_dir = "check")
           writeLines(paste0("```\n", check_results$stdout, "\n```"), Sys.getenv("GITHUB_STEP_SUMMARY"))
-          writeLines(paste0("```\n", check_results$stdout, "\n```"), "summary.md")
           notes <- unlist(strsplit(check_results$notes, "\\n"))
           notes <- grep("^checking CRAN incoming feasibility|^Maintainer: |^New submission$|^$", notes, value = TRUE, invert = TRUE)
-          writeLines(paste0("```\n", notes, "\n```"), "notes.md")
+          writeLines(paste0("R CMD check CRAN incoming feasibility check notes found:```\n", notes, "\n```"), "notes.md")
           if (length(notes) > 0L) cat("::error::Notes found in CRAN incoming feasibility check\n"); cat(paste(notes, collapse = "\n")); quit(status=1)
         shell: Rscript {0}
 
@@ -94,7 +92,6 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: '<summary>R CMD check CRAN incoming feasibility</summary>'
 
       - name: Create or update comment
         if: failure()
