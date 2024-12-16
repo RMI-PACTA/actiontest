@@ -43,6 +43,8 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
+        env:
+          NOT_CRAN: false
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -67,9 +69,12 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+          args: 'c()'
           build_args: 'c("--no-manual","--compact-vignettes=gs+qpdf")'
           error-on: '"note"'
         env:
+          NOT_CRAN: false
           _R_CHECK_CRAN_INCOMING_: true
           _R_CHECK_CRAN_INCOMING_REMOTE_: true
           _R_CHECK_CRAN_INCOMING_USE_ASPELL_: true
+          _R_CHECK_URLS_SHOW_301_STATUS_: true
