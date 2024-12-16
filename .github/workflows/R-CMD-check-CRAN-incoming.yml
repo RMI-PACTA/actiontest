@@ -57,7 +57,7 @@ jobs:
         run: |
           brew install aspell
 
-      - name: R CMD check (CRAN incoming)
+      - name: R CMD check CRAN incoming feasibilty
         id: rcmdcheck
         run: |
           cat("::group::Run R CMD check with CRAN incoming env vars\n")
@@ -80,6 +80,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ format('{0}-{1}-r{2}-{3}-00check.log', runner.os, runner.arch, matrix.config.r, matrix.config.id || strategy.job-index ) }}
-          path: ${{ steps.rcmdcheck.outputs.check-dir-path }}/actiontest.Rcheck/00check.log
-          compression-level: 0
+          path: ${{ steps.rcmdcheck.outputs.check-dir-path }}/*.Rcheck/00check.log
           if-no-files-found: ignore
