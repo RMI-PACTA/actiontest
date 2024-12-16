@@ -84,6 +84,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Find Comment
+        if: failure()
         uses: peter-evans/find-comment@v3
         id: fc
         with:
@@ -92,6 +93,7 @@ jobs:
           body-includes: '<summary>R CMD check CRAN incoming feasibility</summary>'
 
       - name: Create or update comment
+        if: failure()
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
