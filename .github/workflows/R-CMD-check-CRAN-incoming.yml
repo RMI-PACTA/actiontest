@@ -9,7 +9,7 @@ on:
 name: R-CMD-check-CRAN-incoming.yaml
 
 permissions:
-  read-all
+  contents: read
   pull-requests: write
 
 jobs:
