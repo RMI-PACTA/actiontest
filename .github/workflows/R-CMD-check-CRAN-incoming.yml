@@ -80,6 +80,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ format('{0}-{1}-r{2}-{3}-00check.log', runner.os, runner.arch, matrix.config.r, matrix.config.id || strategy.job-index ) }}
-          path: ${{ steps.rcmdcheck.outputs.check-dir-path }}/check/actiontest.Rcheck/00check.log
+          path: ${{ steps.rcmdcheck.outputs.check-dir-path }}/actiontest.Rcheck/00check.log
           compression-level: 0
           if-no-files-found: ignore
