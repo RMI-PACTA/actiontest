@@ -73,7 +73,7 @@ jobs:
           Sys.setenv("_R_CHECK_CRAN_INCOMING_USE_ASPELL_" = "true")
           cat("check-dir-path=", file.path(getwd(), "check"), "\n", file = Sys.getenv("GITHUB_OUTPUT"), sep = "", append = TRUE)
           check_results <- rcmdcheck::rcmdcheck(args = c("--no-manual", "--as-cran"), build_args = c("--no-manual", "--compact-vignettes=gs+qpdf"), error_on = "warning", check_dir = "check")
-          writeLines(check_results$stdout, "cran-incoming-log.md")
+          writeLines(check_results$stdout, Sys.getenv("GITHUB_STEP_SUMMARY"))
           notes <- unlist(strsplit(check_results$notes, "\\n"))
           notes <- grep("^checking CRAN incoming feasibility|^Maintainer: |^New submission$|^$", notes, value = TRUE, invert = TRUE)
           if (length(notes) < 1L) stop("no notes found")
