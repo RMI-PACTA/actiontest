@@ -76,7 +76,7 @@ jobs:
           writeLines(check_results$stdout, Sys.getenv("GITHUB_STEP_SUMMARY"))
           notes <- unlist(strsplit(check_results$notes, "\\n"))
           notes <- grep("^checking CRAN incoming feasibility|^Maintainer: |^New submission$|^$", notes, value = TRUE, invert = TRUE)
-          if (length(notes) < 1L) stop("no notes found")
+          if (length(notes) < 1L) cat("::error::Notes found in CRAN incoming results")
         shell: Rscript {0}
         working-directory: ${{ inputs.working-directory }}
 
