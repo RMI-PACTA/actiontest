@@ -64,7 +64,7 @@ jobs:
       - name: R CMD check (CRAN incoming)
         id: rcmdcheck
         run: |
-          echo ::group::Run R CMD check with CRAN incoming env vars
+          cat("::group::Run R CMD check with CRAN incoming env vars")
           options(crayon.enabled = TRUE)
           cat("LOGNAME=", Sys.info()[["user"]], "\n", sep = "", file = Sys.getenv("GITHUB_ENV"), append = TRUE)
           Sys.setenv("_R_CHECK_FORCE_SUGGESTS_" = "false")
