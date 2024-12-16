@@ -72,7 +72,7 @@ jobs:
           writeLines(paste0("```\n", check_results$stdout, "\n```"), Sys.getenv("GITHUB_STEP_SUMMARY"))
           notes <- unlist(strsplit(check_results$notes, "\\n"))
           notes <- grep("^checking CRAN incoming feasibility|^Maintainer: |^New submission$|^$", notes, value = TRUE, invert = TRUE)
-          if (length(notes) > 0L) cat("::error::Notes found in CRAN incoming feasibility check"); cat(paste(notes, collapse = "\n")); quit(status=1)
+          if (length(notes) > 0L) cat("::error::Notes found in CRAN incoming feasibility check\n"); cat(paste(notes, collapse = "\n")); quit(status=1)
         shell: Rscript {0}
 
       - name: Upload 00check.log
